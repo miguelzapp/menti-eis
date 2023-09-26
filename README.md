@@ -1,2 +1,2 @@
-# Meintimeter Eis Challenge
+# Mentimeter Eis Challenge
 Miguel will ein Eis
