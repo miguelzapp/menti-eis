@@ -24,25 +24,31 @@ class mentimeter:
 
         r: Response = requests.post(
             f"{self.host}/core/identifiers", headers=self.headers, cookies=self.cookies)
-        if r.status_code == 200:
-            data: dict = r.json()
-            identifier_key: str = "identifier"
-            if identifier_key in data:
-                self.headers["X-Identifier"] = data.get(identifier_key, "")
+        if r.status_code != 200:
+            raise EisException(
+                f"({r.status_code}) Failed to fetch cookies: Die Website möchte dir kein Eis gönnen.")
+        
+        data: dict = r.json()
+        identifier_key: str = "identifier"
+        if identifier_key in data:
+            self.headers["X-Identifier"] = data.get(identifier_key, "")
 
     def getVoteId(self):
         self.getIdentifier()
 
         r: Response = requests.get(
             f"{self.host}/core/vote-keys/{self.menti_id}/series", headers=self.headers, cookies=self.cookies)
-        if r.status_code == 200:
-            data: dict = r.json()
-            pace_key: str = "pace"
-            if pace_key in data:
-                pace: dict = data["pace"]
-                vote_id_key: str = "active"
-                if vote_id_key in pace:
-                    self.vote_id = pace.get(vote_id_key, "")
+        if r.status_code != 200:
+            raise EisException(
+                f"({r.status_code}) Die Vote ID für dein Eis konnte nicht abgefragt werden.")
+        
+        data: dict = r.json()
+        pace_key: str = "pace"
+        if pace_key in data:
+            pace: dict = data["pace"]
+            vote_id_key: str = "active"
+            if vote_id_key in pace:
+                self.vote_id = pace.get(vote_id_key, "")
 
     def vote(self, word: str):
         self.getVoteId()
@@ -55,7 +61,7 @@ class mentimeter:
         if r.status_code != 200:
             print(r.content)
             raise EisException(
-                f"Dein Eiswunsch konnte nicht erfüllt werden: {r.status_code}")
+                f"({r.status_code}) Dein Eiswunsch konnte nicht erfüllt werden :(")
 
 
 class EisException(Exception):
